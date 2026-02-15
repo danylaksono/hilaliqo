@@ -23,8 +23,13 @@ const MAP_STYLES = [
   { id: 'voyager', label: 'Voyager', url: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json' },
 ]
 
-const WEATHER_LAYER_SOURCE_ID = 'weather-radar-source'
-const WEATHER_LAYER_ID = 'weather-radar-layer'
+const CLOUD_LAYER_SOURCE_ID = 'cloud-satellite-source'
+const CLOUD_LAYER_ID = 'cloud-satellite-layer'
+const CLOUD_LAYER_TILES = [
+  'https://gibs-a.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg',
+  'https://gibs-b.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg',
+  'https://gibs-c.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/default/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg',
+]
 
 const VISIBILITY_COLORS = [
   { code: 'A', color: '#22c55e', label: 'Hilal easily visible' },
@@ -161,8 +166,7 @@ export default function App() {
   const [weather, setWeather] = useState(null)
   const [weatherLoading, setWeatherLoading] = useState(false)
   const [weatherError, setWeatherError] = useState(null)
-  const [showWeatherOverlay, setShowWeatherOverlay] = useState(false)
-  const [weatherOverlayURL, setWeatherOverlayURL] = useState(null)
+  const [showCloudOverlay, setShowCloudOverlay] = useState(false)
   const [elevationLoading, setElevationLoading] = useState(false)
   const [toast, setToast] = useState(null)
 
@@ -221,42 +225,51 @@ export default function App() {
         paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.4, 'fill-antialias': false }
       })
     }
+    // Keep cloud overlay above the visibility grid when both are enabled.
+    if (mapRef.current.getLayer(CLOUD_LAYER_ID)) {
+      mapRef.current.moveLayer(CLOUD_LAYER_ID)
+    }
   }, [mapLoaded])
 
   const updateMapWithResultsRef = useRef(updateMapWithResults)
   updateMapWithResultsRef.current = updateMapWithResults
 
-  const syncWeatherOverlay = useCallback(() => {
+  const syncCloudOverlay = useCallback(() => {
     if (!mapRef.current || !mapLoaded) return
     const map = mapRef.current
-    const existingLayer = map.getLayer(WEATHER_LAYER_ID)
-    const existingSource = map.getSource(WEATHER_LAYER_SOURCE_ID)
+    const existingLayer = map.getLayer(CLOUD_LAYER_ID)
+    const existingSource = map.getSource(CLOUD_LAYER_SOURCE_ID)
 
-    if (!showWeatherOverlay || !weatherOverlayURL) {
-      if (existingLayer) map.removeLayer(WEATHER_LAYER_ID)
-      if (existingSource) map.removeSource(WEATHER_LAYER_SOURCE_ID)
+    if (!showCloudOverlay) {
+      if (existingLayer) map.removeLayer(CLOUD_LAYER_ID)
+      if (existingSource) map.removeSource(CLOUD_LAYER_SOURCE_ID)
       return
     }
 
     if (!existingSource) {
-      map.addSource(WEATHER_LAYER_SOURCE_ID, {
+      map.addSource(CLOUD_LAYER_SOURCE_ID, {
         type: 'raster',
-        tiles: [weatherOverlayURL],
+        tiles: CLOUD_LAYER_TILES,
         tileSize: 256,
+        attribution: 'Satellite imagery: NASA GIBS',
       })
     }
     if (!existingLayer) {
       map.addLayer({
-        id: WEATHER_LAYER_ID,
+        id: CLOUD_LAYER_ID,
         type: 'raster',
-        source: WEATHER_LAYER_SOURCE_ID,
+        source: CLOUD_LAYER_SOURCE_ID,
         paint: {
-          'raster-opacity': 0.55,
+          'raster-opacity': 0.5,
           'raster-resampling': 'linear',
         },
       })
     }
-  }, [mapLoaded, showWeatherOverlay, weatherOverlayURL])
+    // Ensure cloud layer stays on top after any source/layer updates.
+    if (map.getLayer(CLOUD_LAYER_ID)) {
+      map.moveLayer(CLOUD_LAYER_ID)
+    }
+  }, [mapLoaded, showCloudOverlay])
 
   const updateH3Grid = useCallback(async () => {
     if (!mapRef.current || !mapLoaded || !dbReady) return
@@ -346,9 +359,9 @@ export default function App() {
     mapRef.current.setStyle(selected.url)
     mapRef.current.once('style.load', () => {
       updateMapWithResultsRef.current(Array.from(displayedResults.current.values()))
-      syncWeatherOverlay()
+      syncCloudOverlay()
     })
-  }, [mapStyle, syncWeatherOverlay])
+  }, [mapStyle, syncCloudOverlay])
 
   useEffect(() => {
     if (!mapRef.current) return
@@ -442,29 +455,8 @@ export default function App() {
   }, [coords])
 
   useEffect(() => {
-    let cancelled = false
-    fetch('https://api.rainviewer.com/public/weather-maps.json')
-      .then((res) => {
-        if (!res.ok) throw new Error('RainViewer request failed')
-        return res.json()
-      })
-      .then((data) => {
-        if (cancelled) return
-        const latestPast = data?.radar?.past?.at(-1)
-        if (!latestPast?.path || !data?.host) return
-        setWeatherOverlayURL(`${data.host}${latestPast.path}/256/{z}/{x}/{y}/2/1_1.png`)
-      })
-      .catch(() => {
-        if (!cancelled) setWeatherOverlayURL(null)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  useEffect(() => {
-    syncWeatherOverlay()
-  }, [syncWeatherOverlay])
+    syncCloudOverlay()
+  }, [syncCloudOverlay])
 
   const details = coords ? calculate(coords[0], coords[1], elevation, date, { yallop: true }) : null
   const moonImageURLs = getMoonImageURLs(date, hemisphere === 'south')
@@ -640,11 +632,11 @@ export default function App() {
               {mapMode === '3d' ? '3D' : '2D'}
             </button>
             <button
-              onClick={() => setShowWeatherOverlay((prev) => !prev)}
-              className={`rounded-full px-3 py-1.5 text-xs transition ${showWeatherOverlay ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
-              title={weatherOverlayURL ? 'Toggle precipitation radar overlay (RainViewer)' : 'Radar overlay not available right now'}
+              onClick={() => setShowCloudOverlay((prev) => !prev)}
+              className={`rounded-full px-3 py-1.5 text-xs transition ${showCloudOverlay ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+              title="Toggle global cloud satellite overlay (NASA GIBS)"
             >
-              Radar
+              Clouds
             </button>
           </div>
 
@@ -772,7 +764,7 @@ export default function App() {
               )}
               <p className="text-xs text-slate-500">
                 Source: Open-Meteo (point forecast){' '}
-                {showWeatherOverlay ? 'and RainViewer radar overlay enabled.' : 'and RainViewer radar overlay is off.'}
+                {showCloudOverlay ? 'and NASA cloud satellite overlay enabled.' : 'and NASA cloud satellite overlay is off.'}
               </p>
             </div>
 
