@@ -2,7 +2,7 @@
 
 Interactive global hilal (crescent moon) visibility dashboard for Ramadan and Islamic calendar sighting.
 
-**Hilalliqo** is a wordplay from "hilal" (crescent moon) and "liqo" (see again) — a tool to help observers worldwide track when the new moon becomes visible.
+**Hilalliqo** is a wordplay from "hilal" (crescent moon) and "liqo" (literally 'meeting') — a tool to help observers worldwide track when the new moon becomes visible, interactively.
 
 ## Features
 
