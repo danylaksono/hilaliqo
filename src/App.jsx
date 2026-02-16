@@ -491,40 +491,44 @@ export default function App() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-slate-950 text-slate-100 font-sans">
-      <header className="h-16 flex items-center justify-between px-6 bg-slate-900/95 border-b border-slate-700/60 z-10 backdrop-blur">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">🌙</span>
-          <h1 className="text-xl font-semibold tracking-tight">
-            Hilal-liqo Moon Sighting Dashboard
-            <span className="text-cyan-300 font-normal text-sm ml-2">Global Visibility & Ramadan Sighting</span>
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2 bg-slate-950 rounded-xl p-1 border border-slate-700/70">
-            <button onClick={() => handleDateChange(-1)} className="p-1 px-3 hover:bg-slate-700 rounded-lg transition">←</button>
-            <input type="date" value={toIsoDateInput(date)} onChange={(e) => setDate(new Date(e.target.value))}
-              className="bg-transparent border-none focus:ring-0 text-sm px-2 cursor-pointer" />
-            <button onClick={() => handleDateChange(1)} className="p-1 px-3 hover:bg-slate-700 rounded-lg transition">→</button>
+    <div className="flex min-h-screen w-screen flex-col bg-slate-950 text-slate-100 font-sans lg:h-screen lg:overflow-hidden">
+      <header className="z-10 border-b border-slate-700/60 bg-slate-900/95 px-3 py-3 backdrop-blur sm:px-4 lg:px-6">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <span className="text-xl sm:text-2xl">🌙</span>
+              <h1 className="truncate text-sm font-semibold tracking-tight sm:text-lg lg:text-xl">
+                Hilal-liqo Moon Sighting Dashboard
+              </h1>
+            </div>
+            <p className="mt-1 text-xs text-cyan-300 sm:text-sm">Global Visibility & Ramadan Sighting</p>
           </div>
 
-          <div className="flex items-center gap-2 text-sm">
-            <span className="text-slate-400 uppercase text-xs font-bold">Elev:</span>
-            <input type="number" value={elevation} onChange={(e) => setElevation(parseFloat(e.target.value) || 0)}
-              className="w-20 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1 text-center" />
-            <span className="text-slate-400">m</span>
-            {elevationLoading && <span className="text-[11px] text-cyan-300">auto...</span>}
-          </div>
+          <div className="flex w-full flex-wrap items-center gap-2 sm:gap-3 lg:w-auto lg:justify-end lg:gap-6">
+            <div className="flex min-w-0 flex-1 items-center gap-1 rounded-xl border border-slate-700/70 bg-slate-950 p-1 sm:flex-none sm:gap-2">
+              <button onClick={() => handleDateChange(-1)} className="rounded-lg px-2 py-1 hover:bg-slate-700 transition sm:px-3">←</button>
+              <input type="date" value={toIsoDateInput(date)} onChange={(e) => setDate(new Date(e.target.value))}
+                className="w-full min-w-0 cursor-pointer bg-transparent border-none px-1 text-xs focus:ring-0 sm:px-2 sm:text-sm" />
+              <button onClick={() => handleDateChange(1)} className="rounded-lg px-2 py-1 hover:bg-slate-700 transition sm:px-3">→</button>
+            </div>
 
-          <button onClick={locateUser} className="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition shadow-lg flex items-center gap-2">
-            <span>📍</span> Locate Me
-          </button>
+            <div className="flex items-center gap-2 text-xs sm:text-sm">
+              <span className="text-[10px] font-bold uppercase text-slate-400 sm:text-xs">Elev:</span>
+              <input type="number" value={elevation} onChange={(e) => setElevation(parseFloat(e.target.value) || 0)}
+                className="w-16 rounded-lg border border-slate-700 bg-slate-950 px-2 py-1 text-center sm:w-20" />
+              <span className="text-slate-400">m</span>
+              {elevationLoading && <span className="text-[11px] text-cyan-300">auto...</span>}
+            </div>
+
+            <button onClick={locateUser} className="flex items-center gap-2 rounded-xl bg-cyan-600 px-3 py-2 text-xs font-medium text-white shadow-lg transition hover:bg-cyan-500 sm:px-4 sm:text-sm">
+              <span>📍</span> Locate Me
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden relative">
-        <aside className="w-88 flex flex-col border-r border-slate-700/60 bg-slate-900/85 overflow-y-auto shrink-0">
+      <main className="relative flex flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+        <aside className="order-2 flex w-full flex-col border-t border-slate-700/60 bg-slate-900/85 lg:order-1 lg:w-88 lg:shrink-0 lg:overflow-y-auto lg:border-r lg:border-t-0">
           <section className="p-5 border-b border-slate-700/60">
             {details ? (
               <div className="space-y-4">
@@ -610,16 +614,17 @@ export default function App() {
           <div className="flex-1" />
         </aside>
 
-        <section className="flex-1 relative bg-slate-950">
+        <section className="order-1 relative h-[56vh] min-h-[24rem] bg-slate-950 lg:order-2 lg:h-auto lg:flex-1">
           <div ref={mapContainerRef} className="w-full h-full" />
 
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 rounded-full border border-slate-700/70 bg-slate-900/80 px-2 py-2 backdrop-blur">
-            <span className="text-xs text-slate-300 px-2">Basemap</span>
+          <div className="absolute left-2 right-2 top-2 z-20 overflow-x-auto rounded-2xl border border-slate-700/70 bg-slate-900/85 px-2 py-2 backdrop-blur lg:left-1/2 lg:right-auto lg:top-4 lg:-translate-x-1/2 lg:overflow-visible lg:rounded-full">
+            <div className="flex min-w-max items-center gap-2">
+              <span className="px-2 text-[11px] text-slate-300 sm:text-xs">Basemap</span>
             {MAP_STYLES.map((style) => (
               <button
                 key={style.id}
                 onClick={() => setMapStyle(style.id)}
-                className={`rounded-full px-3 py-1.5 text-xs transition ${mapStyle === style.id ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                className={`rounded-full px-3 py-1.5 text-[11px] transition sm:text-xs ${mapStyle === style.id ? 'bg-cyan-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
               >
                 {style.label}
               </button>
@@ -627,34 +632,35 @@ export default function App() {
             <div className="mx-1 h-5 w-px bg-slate-700" />
             <button
               onClick={() => setMapMode(mapMode === '2d' ? '3d' : '2d')}
-              className={`rounded-full px-3 py-1.5 text-xs transition ${mapMode === '3d' ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+              className={`rounded-full px-3 py-1.5 text-[11px] transition sm:text-xs ${mapMode === '3d' ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
             >
               {mapMode === '3d' ? '3D' : '2D'}
             </button>
             <button
               onClick={() => setShowCloudOverlay((prev) => !prev)}
-              className={`rounded-full px-3 py-1.5 text-xs transition ${showCloudOverlay ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+              className={`rounded-full px-3 py-1.5 text-[11px] transition sm:text-xs ${showCloudOverlay ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
               title="Toggle global cloud satellite overlay (NASA GIBS)"
             >
               Clouds
             </button>
+            </div>
           </div>
 
-          <div className="absolute top-4 right-4 z-20 rounded-xl border border-slate-700/70 bg-slate-900/70 backdrop-blur px-3 py-2">
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] uppercase tracking-wider text-slate-400">Grid</span>
+          <div className="absolute left-2 right-2 top-16 z-20 rounded-xl border border-slate-700/70 bg-slate-900/80 px-2 py-2 backdrop-blur sm:top-[4.8rem] lg:left-auto lg:right-4 lg:top-4 lg:px-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] uppercase tracking-wider text-slate-400 sm:text-[11px]">Grid</span>
               {[null, 1, 2, 3, 4].map((r) => (
                 <button
                   key={r}
                   onClick={() => setManualRes(r)}
-                  className={`text-[11px] px-2 py-1 rounded-md border transition ${manualRes === r ? 'bg-cyan-600 border-cyan-500 text-white' : 'bg-slate-950/60 border-slate-700 text-slate-300 hover:border-slate-500'}`}
+                  className={`rounded-md border px-2 py-1 text-[10px] transition sm:text-[11px] ${manualRes === r ? 'bg-cyan-600 border-cyan-500 text-white' : 'bg-slate-950/60 border-slate-700 text-slate-300 hover:border-slate-500'}`}
                 >
                   {r === null ? 'Auto' : `R${r}`}
                 </button>
               ))}
               <button
                 onClick={exportMap}
-                className="text-[11px] px-2.5 py-1 rounded-md border border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700 transition"
+                className="rounded-md border border-slate-600 bg-slate-800 px-2.5 py-1 text-[10px] text-slate-100 transition hover:bg-slate-700 sm:text-[11px]"
               >
                 Export PNG
               </button>
@@ -662,21 +668,21 @@ export default function App() {
           </div>
 
           {(recalculating || !dbReady) && (
-            <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-slate-900/90 backdrop-blur-md border border-slate-700 px-6 py-3 rounded-full shadow-2xl z-20 flex items-center gap-3">
+            <div className="absolute left-1/2 top-28 z-20 flex -translate-x-1/2 items-center gap-3 rounded-full border border-slate-700 bg-slate-900/90 px-4 py-2 shadow-2xl backdrop-blur-md sm:px-6 sm:py-3 lg:top-20">
               <div className="w-4 h-4 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs font-medium text-cyan-300 tracking-wide uppercase">
+              <span className="text-[10px] font-medium tracking-wide text-cyan-300 uppercase sm:text-xs">
                 {!dbReady ? 'System Initialization...' : 'Analyzing Visibility...'}
               </span>
             </div>
           )}
 
-          <div className="absolute bottom-6 left-6 bg-slate-900/80 backdrop-blur border border-slate-700 p-3 rounded-xl text-xs text-slate-300 max-w-sm pointer-events-none">
+          <div className="pointer-events-none absolute bottom-4 left-2 right-2 hidden max-w-sm rounded-xl border border-slate-700 bg-slate-900/80 p-3 text-xs text-slate-300 backdrop-blur sm:left-4 sm:right-auto sm:block lg:bottom-6 lg:left-6">
             <p className="font-medium text-slate-100 mb-1">Interactive hints</p>
             <p>Pan/zoom to recalculate visibility. H3 Resolution: {currentResolution.current}. 3D mode uses camera pitch for terrain-like perspective.</p>
           </div>
 
           {toast && (
-            <div className={`absolute right-6 bottom-6 z-30 max-w-sm rounded-xl border px-4 py-3 text-sm shadow-xl backdrop-blur ${
+            <div className={`absolute bottom-2 left-2 right-2 z-30 rounded-xl border px-4 py-3 text-sm shadow-xl backdrop-blur sm:bottom-4 sm:left-4 sm:right-auto sm:max-w-sm lg:bottom-6 lg:left-auto lg:right-6 ${
               toast.tone === 'warning'
                 ? 'bg-amber-900/70 border-amber-600/60 text-amber-100'
                 : toast.tone === 'error'
@@ -691,8 +697,8 @@ export default function App() {
           )}
         </section>
 
-        <aside className="w-80 border-l border-slate-700/60 bg-slate-900/85 flex flex-col shrink-0 overflow-y-auto">
-          <section className="p-6 space-y-6">
+        <aside className="order-3 flex w-full flex-col border-t border-slate-700/60 bg-slate-900/85 lg:order-3 lg:w-80 lg:shrink-0 lg:overflow-y-auto lg:border-l lg:border-t-0">
+          <section className="space-y-6 p-5 sm:p-6">
             <div className="space-y-3">
               <h3 className="text-xs font-bold uppercase text-slate-400 tracking-wider text-center">Moon Visual</h3>
               {moonError ? (
